@@ -1,0 +1,575 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 1057,
+    "completion_tokens": 3036,
+    "seconds": 53.75941181182861
+  },
+  "result": {
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "title": "16路单体电压采集",
+        "description": "16路单体电压采集，精度±5mV，采样周期100ms",
+        "preconditions": [],
+        "inputs": [
+          "电芯电压"
+        ],
+        "outputs": [
+          "单体电压值"
+        ],
+        "constraints": [
+          "精度±5mV",
+          "采样周期100ms"
+        ],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-002",
+        "title": "总电压与总电流采集",
+        "description": "总电压、总电流采集，电流使用分流器，量程±200A，需支持软件校准",
+        "preconditions": [],
+        "inputs": [
+          "分流器输出信号"
+        ],
+        "outputs": [
+          "总电压",
+          "总电流"
+        ],
+        "constraints": [
+          "量程±200A",
+          "支持软件校准"
+        ],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-003",
+        "title": "4路温度采集",
+        "description": "4路NTC温度采集，分别布置在电芯表面与MOS散热器上",
+        "preconditions": [],
+        "inputs": [
+          "NTC电阻"
+        ],
+        "outputs": [
+          "温度值"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-004",
+        "title": "过充保护触发",
+        "description": "任意单体电压≥3.65V触发，断开充电MOS",
+        "preconditions": [
+          "单体电压≥3.65V"
+        ],
+        "inputs": [
+          "单体电压"
+        ],
+        "outputs": [
+          "断开充电MOS"
+        ],
+        "constraints": [
+          "阈值3.65V"
+        ],
+        "dependencies": [
+          "REQ-001"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-005",
+        "title": "过充保护恢复电压",
+        "description": "过充保护触发后，恢复电压3.45V",
+        "preconditions": [
+          "过充保护触发"
+        ],
+        "inputs": [
+          "恢复电压阈值"
+        ],
+        "outputs": [
+          "恢复电压3.45V"
+        ],
+        "constraints": [
+          "恢复电压3.45V"
+        ],
+        "dependencies": [
+          "REQ-004"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-006",
+        "title": "过放保护触发",
+        "description": "任意单体电压≤2.5V触发，断开放电MOS",
+        "preconditions": [
+          "单体电压≤2.5V"
+        ],
+        "inputs": [
+          "单体电压"
+        ],
+        "outputs": [
+          "断开放电MOS"
+        ],
+        "constraints": [
+          "阈值2.5V"
+        ],
+        "dependencies": [
+          "REQ-001"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-007",
+        "title": "过放保护恢复电压",
+        "description": "过放保护触发后，恢复电压2.9V",
+        "preconditions": [
+          "过放保护触发"
+        ],
+        "inputs": [
+          "恢复电压阈值"
+        ],
+        "outputs": [
+          "恢复电压2.9V"
+        ],
+        "constraints": [
+          "恢复电压2.9V"
+        ],
+        "dependencies": [
+          "REQ-006"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-008",
+        "title": "过流保护（放电）触发",
+        "description": "放电电流>180A持续1s，或>250A瞬时（100ms）触发",
+        "preconditions": [
+          "放电电流>180A持续1s或>250A瞬时"
+        ],
+        "inputs": [
+          "放电电流"
+        ],
+        "outputs": [
+          "触发过流保护"
+        ],
+        "constraints": [
+          "阈值180A（持续1s）",
+          "阈值250A（瞬时100ms）"
+        ],
+        "dependencies": [
+          "REQ-002"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-009",
+        "title": "温度保护（充电）",
+        "description": "充电温度0～45℃，超出范围禁止充电",
+        "preconditions": [
+          "充电过程中"
+        ],
+        "inputs": [
+          "温度"
+        ],
+        "outputs": [
+          "禁止充电"
+        ],
+        "constraints": [
+          "温度范围0～45℃"
+        ],
+        "dependencies": [
+          "REQ-003"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-010",
+        "title": "温度保护（放电）",
+        "description": "放电温度-20～55℃，超出范围禁止放电",
+        "preconditions": [
+          "放电过程中"
+        ],
+        "inputs": [
+          "温度"
+        ],
+        "outputs": [
+          "禁止放电"
+        ],
+        "constraints": [
+          "温度范围-20～55℃"
+        ],
+        "dependencies": [
+          "REQ-003"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-011",
+        "title": "故障码记录",
+        "description": "保护动作后需记录故障码",
+        "preconditions": [
+          "保护动作发生"
+        ],
+        "inputs": [
+          "故障类型"
+        ],
+        "outputs": [
+          "故障码"
+        ],
+        "constraints": [],
+        "dependencies": [
+          "REQ-004",
+          "REQ-005",
+          "REQ-006",
+          "REQ-007",
+          "REQ-008"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-012",
+        "title": "故障码上报",
+        "description": "通过指示灯与通信报文上报故障码",
+        "preconditions": [
+          "故障码存在"
+        ],
+        "inputs": [
+          "故障码"
+        ],
+        "outputs": [
+          "指示灯状态",
+          "CAN报文"
+        ],
+        "constraints": [],
+        "dependencies": [
+          "REQ-011"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-013",
+        "title": "被动均衡启动条件",
+        "description": "单体压差>50mV时启动被动均衡",
+        "preconditions": [
+          "单体电压采集完成"
+        ],
+        "inputs": [
+          "单体电压"
+        ],
+        "outputs": [
+          "启动均衡"
+        ],
+        "constraints": [
+          "压差阈值50mV"
+        ],
+        "dependencies": [
+          "REQ-001"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-014",
+        "title": "被动均衡停止条件",
+        "description": "压差<20mV时停止被动均衡",
+        "preconditions": [
+          "均衡进行中"
+        ],
+        "inputs": [
+          "单体电压"
+        ],
+        "outputs": [
+          "停止均衡"
+        ],
+        "constraints": [
+          "压差阈值20mV"
+        ],
+        "dependencies": [
+          "REQ-013"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-015",
+        "title": "均衡电流控制",
+        "description": "均衡电流约80mA",
+        "preconditions": [
+          "均衡启动"
+        ],
+        "inputs": [
+          "均衡电流"
+        ],
+        "outputs": [
+          "均衡电流值"
+        ],
+        "constraints": [
+          "均衡电流约80mA"
+        ],
+        "dependencies": [
+          "REQ-013",
+          "REQ-014"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-016",
+        "title": "均衡温度条件",
+        "description": "电芯温度>5℃才允许启动均衡",
+        "preconditions": [
+          "均衡启动条件满足"
+        ],
+        "inputs": [
+          "温度"
+        ],
+        "outputs": [
+          "允许启动均衡"
+        ],
+        "constraints": [
+          "温度>5℃"
+        ],
+        "dependencies": [
+          "REQ-003"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-017",
+        "title": "SOC估算（OCV+库仑计）",
+        "description": "SOC采用开路电压（OCV）+库仑计组合估算，误差目标≤5%",
+        "preconditions": [
+          "电压与电流采集完成"
+        ],
+        "inputs": [
+          "开路电压",
+          "库仑计数据"
+        ],
+        "outputs": [
+          "SOC"
+        ],
+        "constraints": [
+          "误差≤5%"
+        ],
+        "dependencies": [
+          "REQ-001",
+          "REQ-002"
+        ],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-018",
+        "title": "SOH粗估",
+        "description": "提供健康度（SOH）粗估，依据为累计充放电容量衰减",
+        "preconditions": [
+          "历史充放电数据"
+        ],
+        "inputs": [
+          "累计充放电容量"
+        ],
+        "outputs": [
+          "SOH"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-019",
+        "title": "CAN 2.0B上报",
+        "description": "CAN 2.0B上报电压、电流、温度、SOC、故障码，周期1s",
+        "preconditions": [
+          "数据采集完成"
+        ],
+        "inputs": [
+          "电压",
+          "电流",
+          "温度",
+          "SOC",
+          "故障码"
+        ],
+        "outputs": [
+          "CAN报文"
+        ],
+        "constraints": [
+          "周期1s"
+        ],
+        "dependencies": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-003",
+          "REQ-017",
+          "REQ-011"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-020",
+        "title": "UART调试口输出",
+        "description": "UART调试口输出诊断信息，波特率115200",
+        "preconditions": [
+          "调试模式启动"
+        ],
+        "inputs": [
+          "诊断信息"
+        ],
+        "outputs": [
+          "UART数据"
+        ],
+        "constraints": [
+          "波特率115200"
+        ],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-021",
+        "title": "故障记录存储",
+        "description": "最近100条故障记录存入EEPROM，断电不丢失",
+        "preconditions": [
+          "故障记录生成"
+        ],
+        "inputs": [
+          "故障记录"
+        ],
+        "outputs": [
+          "EEPROM存储"
+        ],
+        "constraints": [
+          "100条",
+          "断电不丢失"
+        ],
+        "dependencies": [
+          "REQ-011"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-022",
+        "title": "故障记录导出",
+        "description": "可通过调试口导出最近100条故障记录",
+        "preconditions": [
+          "调试口连接"
+        ],
+        "inputs": [
+          "导出请求"
+        ],
+        "outputs": [
+          "故障记录数据"
+        ],
+        "constraints": [],
+        "dependencies": [
+          "REQ-021"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-023",
+        "title": "单板待机功耗",
+        "description": "单板待机功耗<2mA@12V",
+        "preconditions": [
+          "待机状态"
+        ],
+        "inputs": [
+          "电源"
+        ],
+        "outputs": [
+          "待机功耗"
+        ],
+        "constraints": [
+          "<2mA@12V"
+        ],
+        "dependencies": [],
+        "verification_method": "实测"
+      },
+      {
+        "id": "REQ-024",
+        "title": "保护动作响应时间",
+        "description": "保护动作响应时间≤50ms（从检测到动作）",
+        "preconditions": [
+          "故障检测到"
+        ],
+        "inputs": [
+          "故障信号"
+        ],
+        "outputs": [
+          "响应时间"
+        ],
+        "constraints": [
+          "≤50ms"
+        ],
+        "dependencies": [
+          "REQ-004",
+          "REQ-005",
+          "REQ-006",
+          "REQ-007",
+          "REQ-008"
+        ],
+        "verification_method": "实测"
+      },
+      {
+        "id": "REQ-025",
+        "title": "工作温度范围",
+        "description": "工作温度-20～55℃",
+        "preconditions": [
+          "正常工作"
+        ],
+        "inputs": [
+          "环境温度"
+        ],
+        "outputs": [
+          "工作温度"
+        ],
+        "constraints": [
+          "-20℃～55℃"
+        ],
+        "dependencies": [],
+        "verification_method": "实测"
+      },
+      {
+        "id": "REQ-026",
+        "title": "存储温度范围",
+        "description": "存储温度-40～85℃",
+        "preconditions": [
+          "存储状态"
+        ],
+        "inputs": [
+          "环境温度"
+        ],
+        "outputs": [
+          "存储温度"
+        ],
+        "constraints": [
+          "-40℃～85℃"
+        ],
+        "dependencies": [],
+        "verification_method": "实测"
+      },
+      {
+        "id": "REQ-027",
+        "title": "通过GB/T 36972测试",
+        "description": "产品需通过GB/T 36972相关测试",
+        "preconditions": [
+          "测试环境"
+        ],
+        "inputs": [
+          "测试标准"
+        ],
+        "outputs": [
+          "测试结果"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "第三方测试"
+      }
+    ],
+    "open_issues": [
+      "均衡电流80mA为初版估算，实际按散热温升调整",
+      "CAN报文周期是否需要在故障时加密（比如100ms）待定",
+      "SOH估算算法是否需要外接校准流程，尚未明确"
+    ]
+  }
+}

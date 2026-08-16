@@ -1,0 +1,331 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 826,
+    "completion_tokens": 1941,
+    "seconds": 33.082767724990845
+  },
+  "result": {
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "title": "支持从剪贴板获取图片",
+        "description": "允许用户通过剪贴板粘贴图片进行截图分析",
+        "preconditions": [],
+        "inputs": [
+          "剪贴板图片"
+        ],
+        "outputs": [
+          "分析结果"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-002",
+        "title": "支持读取系统最新截图文件",
+        "description": "允许从系统指定路径读取最新截图文件进行分析",
+        "preconditions": [],
+        "inputs": [
+          "系统截图文件路径"
+        ],
+        "outputs": [
+          "分析结果"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-003",
+        "title": "支持整屏截图功能",
+        "description": "提供整屏截图功能，支持多显示器场景",
+        "preconditions": [],
+        "inputs": [
+          "显示器选择"
+        ],
+        "outputs": [
+          "整屏截图文件"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-004",
+        "title": "整屏截图需支持多显示器场景",
+        "description": "在多显示器环境下，支持用户选择指定显示器进行整屏截图",
+        "preconditions": [
+          "系统支持多显示器"
+        ],
+        "inputs": [
+          "显示器ID"
+        ],
+        "outputs": [
+          "整屏截图文件"
+        ],
+        "constraints": [],
+        "dependencies": [
+          "REQ-003"
+        ],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-005",
+        "title": "图片大小上限 5MB",
+        "description": "输入图片大小不能超过 5MB，超过时需先压缩再分析",
+        "preconditions": [],
+        "inputs": [
+          "图片文件"
+        ],
+        "outputs": [
+          "压缩后图片"
+        ],
+        "constraints": [
+          "文件大小 ≤ 5MB"
+        ],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-006",
+        "title": "大图自动分区识别",
+        "description": "当图片边长 >1024px 时，自动将图片切成带重叠的分区逐块分析，再合并结果",
+        "preconditions": [
+          "图片边长 >1024px"
+        ],
+        "inputs": [
+          "图片文件"
+        ],
+        "outputs": [
+          "分区分析结果"
+        ],
+        "constraints": [
+          "分区重叠"
+        ],
+        "dependencies": [],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-007",
+        "title": "支持用户指定感兴趣区域（ROI）",
+        "description": "允许用户选择图片中感兴趣区域进行分析",
+        "preconditions": [],
+        "inputs": [
+          "ROI 区域坐标"
+        ],
+        "outputs": [
+          "ROI 分析结果"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-008",
+        "title": "支持自定义分析提示词",
+        "description": "允许用户输入自定义提示词，如\"提取所有引脚名\"",
+        "preconditions": [],
+        "inputs": [
+          "自定义提示词"
+        ],
+        "outputs": [
+          "分析结果"
+        ],
+        "constraints": [
+          "提示词长度 ≤ 200 字符"
+        ],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-009",
+        "title": "默认提示词为\"描述图片内容\"",
+        "description": "当用户未指定提示词时，使用默认提示词\"描述图片内容\"",
+        "preconditions": [],
+        "inputs": [
+          "无"
+        ],
+        "outputs": [
+          "分析结果"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-010",
+        "title": "分析结果以 Markdown 文本返回",
+        "description": "将图像分析结果格式化为 Markdown 文本",
+        "preconditions": [],
+        "inputs": [
+          "分析结果"
+        ],
+        "outputs": [
+          "Markdown 文本"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-011",
+        "title": "表格识别需输出 Markdown 表格",
+        "description": "当识别内容为表格时，输出为 Markdown 表格格式",
+        "preconditions": [
+          "识别结果为表格"
+        ],
+        "inputs": [
+          "识别结果"
+        ],
+        "outputs": [
+          "Markdown 表格"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "功能测试"
+      },
+      {
+        "id": "REQ-012",
+        "title": "单次分析超时上限 120s",
+        "description": "分析过程单次执行不超过 120 秒，超时返回明确错误信息",
+        "preconditions": [],
+        "inputs": [
+          "图片文件"
+        ],
+        "outputs": [
+          "分析结果或超时错误"
+        ],
+        "constraints": [
+          "超时时间 ≤ 120s"
+        ],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-013",
+        "title": "通过 MCP 协议提供 analyze_image 工具",
+        "description": "通过 MCP 协议实现 analyze_image 功能，接收图片和提示词，返回分析结果",
+        "preconditions": [],
+        "inputs": [
+          "图片文件",
+          "提示词"
+        ],
+        "outputs": [
+          "分析结果"
+        ],
+        "constraints": [],
+        "dependencies": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-003",
+          "REQ-005",
+          "REQ-006",
+          "REQ-007",
+          "REQ-008",
+          "REQ-009",
+          "REQ-010",
+          "REQ-011",
+          "REQ-012"
+        ],
+        "verification_method": "集成测试"
+      },
+      {
+        "id": "REQ-014",
+        "title": "通过 MCP 协议提供 get_status 工具",
+        "description": "通过 MCP 协议实现 get_status 功能，返回工具状态信息",
+        "preconditions": [],
+        "inputs": [
+          "无"
+        ],
+        "outputs": [
+          "状态信息"
+        ],
+        "constraints": [],
+        "dependencies": [],
+        "verification_method": "单元测试"
+      },
+      {
+        "id": "REQ-015",
+        "title": "支持 Codex、Trae、Cursor 等 MCP 客户端",
+        "description": "确保工具能被 Codex、Trae、Cursor 等 MCP 客户端正确调用",
+        "preconditions": [],
+        "inputs": [
+          "MCP 客户端类型"
+        ],
+        "outputs": [
+          "状态信息"
+        ],
+        "constraints": [],
+        "dependencies": [
+          "REQ-013",
+          "REQ-014"
+        ],
+        "verification_method": "集成测试"
+      },
+      {
+        "id": "REQ-016",
+        "title": "图像数据仅在本机处理",
+        "description": "所有图像处理环节均在本地完成，不上传任何图片字节到云端",
+        "preconditions": [],
+        "inputs": [
+          "图片文件"
+        ],
+        "outputs": [
+          "处理后的结果"
+        ],
+        "constraints": [
+          "不上传图片字节"
+        ],
+        "dependencies": [],
+        "verification_method": "安全审计"
+      },
+      {
+        "id": "REQ-017",
+        "title": "整屏截图分析总耗时目标 <10s",
+        "description": "在本地 GPU 上，整屏截图分析的总耗时不超过 10 秒",
+        "preconditions": [
+          "系统使用本地 GPU"
+        ],
+        "inputs": [
+          "整屏截图文件"
+        ],
+        "outputs": [
+          "分析结果"
+        ],
+        "constraints": [
+          "耗时 < 10s"
+        ],
+        "dependencies": [
+          "REQ-003"
+        ],
+        "verification_method": "性能测试"
+      },
+      {
+        "id": "REQ-018",
+        "title": "分析失败时返回可操作的错误信息",
+        "description": "当分析失败时，返回明确的可操作错误信息，如\"文件过大\"或\"格式不支持\"",
+        "preconditions": [],
+        "inputs": [
+          "图片文件"
+        ],
+        "outputs": [
+          "错误信息"
+        ],
+        "constraints": [],
+        "dependencies": [
+          "REQ-005",
+          "REQ-012"
+        ],
+        "verification_method": "功能测试"
+      }
+    ],
+    "open_issues": [
+      "多显示器截图的交互方式（选择菜单还是配置文件）未定",
+      "分区识别结果的合并策略是否需要支持用户手动校正"
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 888,
+    "completion_tokens": 832,
+    "seconds": 14.031204462051392
+  },
+  "result": {
+    "functional_requirements": [
+      {
+        "id": "FR-001",
+        "summary": "使用 NTC 10K 热敏电阻采集环境温度，量程 0～60℃，分辨率 0.1℃",
+        "source_section": "2.1 温度采集"
+      },
+      {
+        "id": "FR-002",
+        "summary": "采集周期 1s，软件需对采样值做一阶滤波，抑制 50Hz 工频干扰",
+        "source_section": "2.1 温度采集"
+      },
+      {
+        "id": "FR-003",
+        "summary": "传感器开路、短路检测：采集值异常时进入故障状态，屏幕显示错误码 E1（开路）/ E2（短路）",
+        "source_section": "2.1 温度采集"
+      },
+      {
+        "id": "FR-004",
+        "summary": "用户可设置目标温度，范围 16～35℃，步进 0.5℃",
+        "source_section": "2.2 温度控制"
+      },
+      {
+        "id": "FR-005",
+        "summary": "控制方式为 PID 输出占空比驱动加热器；支持一键自整定，自整定期间停止正常调节并提示用户",
+        "source_section": "2.2 温度控制"
+      },
+      {
+        "id": "FR-006",
+        "summary": "加热器为 MOSFET 驱动，软件过温保护阈值 65℃（NTC 采集），硬件另有熔断保护",
+        "source_section": "2.2 温度控制"
+      },
+      {
+        "id": "FR-007",
+        "summary": "控制周期要求 ≤500ms",
+        "source_section": "2.2 温度控制"
+      },
+      {
+        "id": "FR-008",
+        "summary": "3 个实体按键：电源、温度+/温度-；OLED 显示当前温度、目标温度、运行状态",
+        "source_section": "2.3 本地交互"
+      },
+      {
+        "id": "FR-009",
+        "summary": "长按电源键 3s 进入设置菜单；设置项包含 Wi-Fi 配网与温度校准",
+        "source_section": "2.3 本地交互"
+      },
+      {
+        "id": "FR-010",
+        "summary": "掉电时保存当前设置到 EEPROM（目标温度、校准值、配网状态），上电自动恢复",
+        "source_section": "2.3 本地交互"
+      },
+      {
+        "id": "FR-011",
+        "summary": "设备通过 Wi-Fi 接入家庭网络，支持 App 远程查看温度、修改目标温度",
+        "source_section": "2.4 远程控制"
+      },
+      {
+        "id": "FR-012",
+        "summary": "网络中断时本地控制不受影响；恢复后自动重连，离线期间的设置变更需缓存并补报",
+        "source_section": "2.4 远程控制"
+      },
+      {
+        "id": "FR-013",
+        "summary": "App 指令响应时间尽量控制在 3 秒以内",
+        "source_section": "2.4 远程控制"
+      }
+    ],
+    "non_functional_requirements": [
+      "整机待机功耗目标 <1W",
+      "EEPROM 擦写寿命要求 ≥10 万次",
+      "出厂前需通过 EMC 传导发射测试"
+    ]
+  }
+}

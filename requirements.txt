@@ -1,0 +1,5 @@
+# 注：fastmcp 0.1.0 为本项目验证过的版本（旧版 API：@mcp.tool + mcp.run()）
+fastmcp==0.1.0
+requests==2.32.3
+python-dotenv==1.0.1
+Pillow==12.3.0

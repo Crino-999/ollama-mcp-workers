@@ -1,0 +1,444 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 1047,
+    "completion_tokens": 4259,
+    "seconds": 77.23273801803589
+  },
+  "result": {
+    "test_cases": [
+      {
+        "id": "TC-001",
+        "title": "正常路径：16路单体电压采集精度±5mV，采样周期100ms",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，16路单体电池电压在0V~4.2V范围内，温度在-20℃~55℃"
+        ],
+        "steps": [
+          "使用高精度电压表测量每路单体电池电压",
+          "记录100ms内每路电压的采样值"
+        ],
+        "expected": "每路电压采样值与实际电压的绝对误差 ≤5mV，采样周期稳定在100ms±10ms"
+      },
+      {
+        "id": "TC-002",
+        "title": "正常路径：总电压与总电流采集（±200A量程，软件校准）",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，电池组总电压在0V~80V范围内，放电电流在0~200A范围内"
+        ],
+        "steps": [
+          "施加已知负载，使电流在0~200A范围内变化",
+          "通过分流器测量总电流，同时获取总电压"
+        ],
+        "expected": "总电流测量值与实际电流的误差 ≤±2mA（软件校准后），总电压测量值与实际值误差 ≤±5mV"
+      },
+      {
+        "id": "TC-003",
+        "title": "正常路径：4路温度采集（NTC）",
+        "requirement_ref": "2.1",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，4路NTC温度传感器已正确连接"
+        ],
+        "steps": [
+          "使用热成像仪或温度计分别测量4路NTC对应的物理温度"
+        ],
+        "expected": "温度采集值与实际温度的误差 ≤±0.5℃"
+      },
+      {
+        "id": "TC-004",
+        "title": "正常路径：过充保护（任意单体电压≥3.65V触发）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，充电电压设置为4.2V，单体电池电压在3.6V~4.2V范围内"
+        ],
+        "steps": [
+          "缓慢提升单体电池电压至3.65V，持续100ms"
+        ],
+        "expected": "系统在3.65V时断开充电MOS，同时记录故障码（如0x01）并点亮红色指示灯"
+      },
+      {
+        "id": "TC-005",
+        "title": "正常路径：过放保护（任意单体电压≤2.5V触发）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，放电负载使单体电池电压在2.5V~3.0V范围内"
+        ],
+        "steps": [
+          "缓慢降低单体电池电压至2.5V，持续100ms"
+        ],
+        "expected": "系统在2.5V时断开放电MOS，同时记录故障码（如0x02）并点亮红色指示灯"
+      },
+      {
+        "id": "TC-006",
+        "title": "正常路径：过流保护（放电电流>180A持续1s）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，放电负载使电流在180A~200A范围内"
+        ],
+        "steps": [
+          "持续施加181A电流1秒"
+        ],
+        "expected": "系统在1秒后断开放电MOS，记录故障码（如0x03）并点亮红色指示灯"
+      },
+      {
+        "id": "TC-007",
+        "title": "正常路径：过流保护（瞬时>250A）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，放电负载使电流在250A~260A范围内"
+        ],
+        "steps": [
+          "瞬时施加251A电流（持续100ms）"
+        ],
+        "expected": "系统在100ms内断开放电MOS，记录故障码（如0x04）并点亮红色指示灯"
+      },
+      {
+        "id": "TC-008",
+        "title": "正常路径：温度保护（充电温度0~45℃）",
+        "requirement_ref": "2.2",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，环境温度在0℃~45℃范围内"
+        ],
+        "steps": [
+          "将电池组置于充电环境，监控充电过程"
+        ],
+        "expected": "充电过程正常进行，无过热保护触发"
+      },
+      {
+        "id": "TC-009",
+        "title": "正常路径：温度保护（放电温度-20~55℃）",
+        "requirement_ref": "2.2",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，环境温度在-20℃~55℃范围内"
+        ],
+        "steps": [
+          "将电池组置于放电环境，监控放电过程"
+        ],
+        "expected": "放电过程正常进行，无过热保护触发"
+      },
+      {
+        "id": "TC-010",
+        "title": "正常路径：均衡功能（单体压差>50mV启动）",
+        "requirement_ref": "2.3",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，电池组处于充电状态，电芯温度>5℃"
+        ],
+        "steps": [
+          "通过充电使单体电池压差达到50mV以上"
+        ],
+        "expected": "系统启动均衡功能，均衡电流约80mA"
+      },
+      {
+        "id": "TC-011",
+        "title": "正常路径：均衡功能（压差<20mV停止）",
+        "requirement_ref": "2.3",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，电池组处于均衡状态，电芯温度>5℃"
+        ],
+        "steps": [
+          "通过均衡使单体电池压差降至20mV以下"
+        ],
+        "expected": "系统停止均衡功能"
+      },
+      {
+        "id": "TC-012",
+        "title": "正常路径：SOC估算（OCV+库仑计，误差≤5%）",
+        "requirement_ref": "2.4",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，电池组处于稳定状态（无快速充放电）"
+        ],
+        "steps": [
+          "在100ms内完成10次充放电循环，记录SOC估算值"
+        ],
+        "expected": "SOC估算误差 ≤5%"
+      },
+      {
+        "id": "TC-013",
+        "title": "正常路径：SOH粗估（基于累计充放电容量衰减）",
+        "requirement_ref": "2.4",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，电池组已进行多次充放电循环"
+        ],
+        "steps": [
+          "记录电池组的充放电容量衰减数据"
+        ],
+        "expected": "SOH估算值与实际容量衰减误差 ≤10%"
+      },
+      {
+        "id": "TC-014",
+        "title": "正常路径：CAN 2.0B上报周期1s",
+        "requirement_ref": "2.5",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，CAN总线连接正常"
+        ],
+        "steps": [
+          "使用CAN分析工具监控CAN总线，记录报文周期"
+        ],
+        "expected": "CAN报文周期稳定在1s±50ms"
+      },
+      {
+        "id": "TC-015",
+        "title": "正常路径：UART调试口输出（波特率115200）",
+        "requirement_ref": "2.5",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，调试串口连接正常"
+        ],
+        "steps": [
+          "通过串口调试工具连接UART，检查输出内容"
+        ],
+        "expected": "波特率稳定在115200，输出内容包含诊断信息"
+      },
+      {
+        "id": "TC-016",
+        "title": "正常路径：故障记录（最近100条存入EEPROM）",
+        "requirement_ref": "2.5",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "系统已上电，发生至少1次故障"
+        ],
+        "steps": [
+          "断电后，通过调试口导出EEPROM中的故障记录"
+        ],
+        "expected": "导出的故障记录条数 ≥100条，格式正确"
+      },
+      {
+        "id": "TC-017",
+        "title": "边界条件：单体电压采样精度±5mV的边界值",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，单体电池电压在3.6V~4.2V范围内"
+        ],
+        "steps": [
+          "使用电压表测量单体电压为3.6V+5mV和3.6V-5mV的边界值"
+        ],
+        "expected": "采样值在3.6V±5mV范围内，误差 ≤±5mV"
+      },
+      {
+        "id": "TC-018",
+        "title": "边界条件：电流量程±200A的边界值",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，电流在199.5A~200.5A范围内"
+        ],
+        "steps": [
+          "通过分流器测量电流值"
+        ],
+        "expected": "电流测量值在±200A边界内，误差 ≤±2mA"
+      },
+      {
+        "id": "TC-019",
+        "title": "边界条件：温度保护的边界温度（充电0℃/放电-20℃）",
+        "requirement_ref": "2.2",
+        "priority": "P2",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，环境温度在0℃（充电）和-20℃（放电）"
+        ],
+        "steps": [
+          "将电池组置于0℃充电环境和-20℃放电环境"
+        ],
+        "expected": "在0℃时允许充电，-20℃时允许放电"
+      },
+      {
+        "id": "TC-020",
+        "title": "边界条件：均衡启动阈值（单体压差50mV）",
+        "requirement_ref": "2.3",
+        "priority": "P2",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，电池组处于充电状态，电芯温度>5℃"
+        ],
+        "steps": [
+          "将单体电池压差设置为50.1mV"
+        ],
+        "expected": "系统不启动均衡功能"
+      },
+      {
+        "id": "TC-021",
+        "title": "边界条件：均衡停止阈值（单体压差20mV）",
+        "requirement_ref": "2.3",
+        "priority": "P2",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，电池组处于均衡状态，电芯温度>5℃"
+        ],
+        "steps": [
+          "将单体电池压差设置为19.9mV"
+        ],
+        "expected": "系统停止均衡功能"
+      },
+      {
+        "id": "TC-022",
+        "title": "边界条件：过充保护阈值（3.65V）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，单体电池电压在3.649V~3.651V范围内"
+        ],
+        "steps": [
+          "缓慢提升单体电池电压至3.65V"
+        ],
+        "expected": "系统在3.65V时触发过充保护"
+      },
+      {
+        "id": "TC-023",
+        "title": "边界条件：过放保护阈值（2.5V）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，单体电池电压在2.499V~2.501V范围内"
+        ],
+        "steps": [
+          "缓慢降低单体电池电压至2.5V"
+        ],
+        "expected": "系统在2.5V时触发过放保护"
+      },
+      {
+        "id": "TC-024",
+        "title": "边界条件：过流保护（180A持续1s）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，电流在180A范围内"
+        ],
+        "steps": [
+          "持续施加180.1A电流1秒"
+        ],
+        "expected": "系统在1秒后触发过流保护"
+      },
+      {
+        "id": "TC-025",
+        "title": "边界条件：过流保护（250A瞬时）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "系统已上电，电流在250A范围内"
+        ],
+        "steps": [
+          "瞬时施加250.1A电流（持续100ms）"
+        ],
+        "expected": "系统在100ms内触发过流保护"
+      },
+      {
+        "id": "TC-026",
+        "title": "异常路径：过充保护恢复电压3.45V",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "系统已触发过充保护，过充MOS已断开"
+        ],
+        "steps": [
+          "将单体电池电压恢复至3.45V"
+        ],
+        "expected": "系统恢复充电，过充保护MOS重新闭合"
+      },
+      {
+        "id": "TC-027",
+        "title": "异常路径：过放保护恢复电压2.9V",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "系统已触发过放保护，过放MOS已断开"
+        ],
+        "steps": [
+          "将单体电池电压恢复至2.9V"
+        ],
+        "expected": "系统恢复放电，过放保护MOS重新闭合"
+      },
+      {
+        "id": "TC-028",
+        "title": "异常路径：过流保护后重连",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "系统已触发过流保护，过流MOS已断开"
+        ],
+        "steps": [
+          "将电流恢复至安全值"
+        ],
+        "expected": "系统在1秒内重新连接放电MOS"
+      },
+      {
+        "id": "TC-029",
+        "title": "异常路径：温度保护失效（超出温度范围）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "系统已上电，环境温度在45℃以上（充电）或-20℃以下（放电）"
+        ],
+        "steps": [
+          "强制充电或放电"
+        ],
+        "expected": "系统禁止相应方向充放电，不触发其他保护"
+      },
+      {
+        "id": "TC-030",
+        "title": "异常路径：均衡中断（充电中断）",
+        "requirement_ref": "2.3",
+        "priority": "P2",
+        "category": "error",
+        "preconditions": [
+          "系统已启动均衡，充电中断"
+        ],
+        "steps": [
+          "突然断开充电电源"
+        ],
+        "expected": "系统停止均衡，电芯温度恢复至>5℃后重新启动均衡"
+      }
+    ],
+    "coverage_gaps": [
+      "CAN报文周期是否需要在故障时加密（比如 100ms）待定",
+      "SOH 估算算法是否需要外接校准流程，尚未明确",
+      "均衡电流80mA为初版估算，实际按散热温升调整，未明确具体调整机制",
+      "保护动作响应时间≤50ms，未明确具体测试方法和工具",
+      "单板待机功耗<2mA@12V，未明确测试条件（如温度、负载）",
+      "GB/T 36972测试未明确具体测试方法和工具"
+    ]
+  }
+}

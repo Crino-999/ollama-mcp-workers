@@ -1,0 +1,193 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 816,
+    "completion_tokens": 1650,
+    "seconds": 28.21018648147583
+  },
+  "result": {
+    "test_cases": [
+      {
+        "id": "TC-001",
+        "title": "正常路径：验证整屏截图（单显示器）输入并分析",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "用户执行整屏截图（单显示器）",
+          "将截图文件上传至 Vision Tool",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "返回结构化 Markdown 文本，包含图片概要和关键信息列表"
+      },
+      {
+        "id": "TC-002",
+        "title": "边界条件：验证整屏截图（多显示器）输入并分析",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "用户执行整屏截图（多显示器场景）",
+          "将截图文件上传至 Vision Tool",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "返回结构化 Markdown 文本，包含图片概要和关键信息列表"
+      },
+      {
+        "id": "TC-003",
+        "title": "边界条件：验证大图（边长 >1024px）自动分区识别",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "生成边长为 1025px 的图片（例如 1025x1025px）",
+          "将图片上传至 Vision Tool",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "图片被自动分区识别，返回合并后的结构化 Markdown 文本，避免细节丢失"
+      },
+      {
+        "id": "TC-004",
+        "title": "异常路径：验证输入图片大小超过 5MB 时的处理",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "创建一个大小超过 5MB 的图片文件（例如 6MB）",
+          "将图片上传至 Vision Tool",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "系统自动压缩图片后分析，返回结构化 Markdown 文本"
+      },
+      {
+        "id": "TC-005",
+        "title": "异常路径：验证单次分析超时 120s 时的错误处理",
+        "requirement_ref": "2.3",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "启动一个长时间的分析任务（例如 121s）",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "返回明确的超时错误信息（例如 '分析超时，耗时 121s'）"
+      },
+      {
+        "id": "TC-006",
+        "title": "边界条件：验证输入图片大小为 5MB 时的处理",
+        "requirement_ref": "2.1",
+        "priority": "P2",
+        "category": "boundary",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "创建一个大小为 5MB 的图片文件",
+          "将图片上传至 Vision Tool",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "系统正常分析，返回结构化 Markdown 文本"
+      },
+      {
+        "id": "TC-007",
+        "title": "正常路径：验证用户指定感兴趣区域（ROI）分析",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "上传一张包含多个区域的图片",
+          "指定感兴趣区域（ROI）",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "返回结构化 Markdown 文本，仅包含指定 ROI 的内容"
+      },
+      {
+        "id": "TC-008",
+        "title": "异常路径：验证图片格式不支持时的错误处理",
+        "requirement_ref": "2.3",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "上传一个非支持的图片格式（例如 .zip 文件）",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "返回明确的格式错误信息（例如 '不支持的图片格式'）"
+      },
+      {
+        "id": "TC-009",
+        "title": "边界条件：验证表格识别输出为 Markdown 表格",
+        "requirement_ref": "2.3",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "上传一张包含表格的图片（例如寄存器表）",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "返回结构化 Markdown 文本，包含表格格式的输出"
+      },
+      {
+        "id": "TC-010",
+        "title": "正常路径：验证自定义提示词（如'提取所有引脚名'）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "上传一张包含电路图的图片",
+          "指定自定义提示词为 '提取所有引脚名'",
+          "调用 analyze_image 工具进行分析"
+        ],
+        "expected": "返回结构化 Markdown 文本，仅包含提取的引脚名列表"
+      },
+      {
+        "id": "TC-011",
+        "title": "异常路径：验证系统集成时的错误处理",
+        "requirement_ref": "2.4",
+        "priority": "P2",
+        "category": "error",
+        "preconditions": [
+          "用户已安装 Vision Tool"
+        ],
+        "steps": [
+          "通过 MCP 协议调用 analyze_image 工具，但 MCP 服务不可用",
+          "执行分析"
+        ],
+        "expected": "返回明确的 MCP 服务错误信息"
+      }
+    ],
+    "coverage_gaps": [
+      "多显示器截图的交互方式（选择菜单还是配置文件）未定，无法确定测试步骤",
+      "分区识别结果的合并策略是否需要支持用户手动校正未明确，无法确定测试步骤",
+      "整屏截图分析总耗时目标 <10s（本地 GPU）未明确具体测试方法",
+      "未明确大图分区识别的具体分区大小和重叠比例，难以精确测试",
+      "未明确系统集成时的详细错误处理流程"
+    ]
+  }
+}

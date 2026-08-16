@@ -1,0 +1,50 @@
+# Python virtual environment
+venv/
+env/
+.env
+
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# IDE configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Log files
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ---------------------------------------------------------------------------
+# 本地私有内容（绝不公开）：
+# .private/ 存放个人配置、截图、真实项目样本与内部记录，只在本机保留。
+# ---------------------------------------------------------------------------
+.private/
+
+# MCP 配置（含本机路径）
+mcp.json
+MCP.code-workspace
+config.toml
+docs/config.toml
+
+# Trae 本地规划文档
+.trae/
+
+# 个人素材与厂商文档（不随公开仓库分发）
+docs/*.png
+tests/*.png
+tests/*.pdf
+
+# Test files
+tests/__pycache__/

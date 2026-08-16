@@ -1,0 +1,79 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 725,
+    "completion_tokens": 714,
+    "seconds": 12.174069166183472
+  },
+  "result": {
+    "functional_requirements": [
+      {
+        "id": "FR-001",
+        "summary": "支持三种输入来源：剪贴板图片、系统最新截图文件、整屏截图",
+        "source_section": "2.1 截图输入"
+      },
+      {
+        "id": "FR-002",
+        "summary": "整屏截图需支持多显示器场景，用户可选择指定显示器",
+        "source_section": "2.1 截图输入"
+      },
+      {
+        "id": "FR-003",
+        "summary": "输入图片大小上限 5MB；超过时先压缩再分析",
+        "source_section": "2.1 截图输入"
+      },
+      {
+        "id": "FR-004",
+        "summary": "默认调用本地视觉模型分析整张图片，返回结构化文字描述",
+        "source_section": "2.2 图像分析"
+      },
+      {
+        "id": "FR-005",
+        "summary": "大图（边长 >1024px）自动分区识别：将图片切成带重叠的分区逐块分析，再合并结果，避免细节丢失",
+        "source_section": "2.2 图像分析"
+      },
+      {
+        "id": "FR-006",
+        "summary": "支持用户指定感兴趣区域（ROI），只分析该区域",
+        "source_section": "2.2 图像分析"
+      },
+      {
+        "id": "FR-007",
+        "summary": "支持自定义分析提示词（如\"提取所有引脚名\"），默认提示词为\"描述图片内容\"",
+        "source_section": "2.2 图像分析"
+      },
+      {
+        "id": "FR-008",
+        "summary": "分析结果以 Markdown 文本返回，包含图片概要、关键信息列表",
+        "source_section": "2.3 结果输出"
+      },
+      {
+        "id": "FR-009",
+        "summary": "若识别内容为表格（如寄存器表），需输出为 Markdown 表格",
+        "source_section": "2.3 结果输出"
+      },
+      {
+        "id": "FR-010",
+        "summary": "单次分析超时上限 120s，超时返回明确错误信息",
+        "source_section": "2.3 结果输出"
+      },
+      {
+        "id": "FR-011",
+        "summary": "通过 MCP 协议提供 analyze_image、get_status 两个工具",
+        "source_section": "2.4 系统集成"
+      },
+      {
+        "id": "FR-012",
+        "summary": "支持 Codex、Trae、Cursor 等 MCP 客户端接入",
+        "source_section": "2.4 系统集成"
+      }
+    ],
+    "non_functional_requirements": [
+      "全部图像数据仅在本机处理，任何环节不得上传图片字节",
+      "整屏截图分析总耗时目标 <10s（本地 GPU）",
+      "分析失败时需返回可操作的错误信息（如\"文件过大\"\"格式不支持\"）"
+    ]
+  }
+}

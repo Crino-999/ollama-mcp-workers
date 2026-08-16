@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "vision": {
+      "type": "stdio",
+      "command": "<python>",
+      "args": ["<项目根目录>/run.py"],
+      "env": {
+        "OLLAMA_HOST": "http://127.0.0.1:11434",
+        "VISION_MODEL": "qwen2.5vl:7b",
+        "OLLAMA_TIMEOUT": "120",
+        "MAX_IMAGE_SIZE": "5242880",
+        "MAX_IMAGE_DIM": "1024",
+        "OLLAMA_NUM_CTX": "8192"
+      }
+    },
+    "doc-worker": {
+      "type": "stdio",
+      "command": "<python>",
+      "args": ["<项目根目录>/doc_worker.py"],
+      "env": {
+        "OLLAMA_HOST": "http://127.0.0.1:11434",
+        "DOC_MODEL": "qwen3:4b",
+        "OLLAMA_TIMEOUT": "300",
+        "OLLAMA_NUM_CTX": "8192"
+      }
+    }
+  }
+}

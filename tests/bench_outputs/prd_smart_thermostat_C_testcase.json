@@ -1,0 +1,272 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 979,
+    "completion_tokens": 2352,
+    "seconds": 41.04971432685852
+  },
+  "result": {
+    "test_cases": [
+      {
+        "id": "TC-001",
+        "title": "温度采集功能：正常温度范围内的采样",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "使用 NTC 10K 热敏电阻在 25℃ 环境下进行温度采集"
+        ],
+        "expected": "采集值在 24.95℃～25.05℃ 范围内，显示在 OLED 上"
+      },
+      {
+        "id": "TC-002",
+        "title": "温度采集功能：温度下限（0℃）的采样",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "使用 NTC 10K 热敏电阻在 0℃ 环境下进行温度采集"
+        ],
+        "expected": "采集值在 0.00℃～0.05℃ 范围内，显示在 OLED 上"
+      },
+      {
+        "id": "TC-003",
+        "title": "温度采集功能：温度上限（60℃）的采样",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "使用 NTC 10K 热敏电阻在 60℃ 环境下进行温度采集"
+        ],
+        "expected": "采集值在 59.95℃～60.05℃ 范围内，显示在 OLED 上"
+      },
+      {
+        "id": "TC-004",
+        "title": "温度采集功能：温度开路故障检测（E1错误码）",
+        "requirement_ref": "2.1",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "断开 NTC 10K 热敏电阻引脚，模拟开路状态"
+        ],
+        "expected": "OLED 显示错误码 E1（开路）"
+      },
+      {
+        "id": "TC-005",
+        "title": "温度采集功能：温度短路故障检测（E2错误码）",
+        "requirement_ref": "2.1",
+        "category": "error",
+        "priority": "P1",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "短接 NTC 10K 热敏电阻引脚，模拟短路状态"
+        ],
+        "expected": "OLED 显示错误码 E2（短路）"
+      },
+      {
+        "id": "TC-006",
+        "title": "温度控制功能：目标温度设置（16℃）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "通过本地按键将目标温度设置为 16℃"
+        ],
+        "expected": "OLED 显示目标温度为 16.0℃"
+      },
+      {
+        "id": "TC-007",
+        "title": "温度控制功能：目标温度设置（35℃）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "boundary",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "通过本地按键将目标温度设置为 35℃"
+        ],
+        "expected": "OLED 显示目标温度为 35.0℃"
+      },
+      {
+        "id": "TC-008",
+        "title": "温度控制功能：目标温度设置（步进 0.5℃）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "从当前目标温度开始，通过本地按键逐步增加 0.5℃"
+        ],
+        "expected": "目标温度每次增加 0.5℃，显示在 OLED 上"
+      },
+      {
+        "id": "TC-009",
+        "title": "温度控制功能：PID 控制周期（≤500ms）",
+        "requirement_ref": "2.2",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "启动 PID 控制，记录控制周期时间"
+        ],
+        "expected": "控制周期时间 ≤500ms"
+      },
+      {
+        "id": "TC-010",
+        "title": "温度控制功能：过温保护（65℃）",
+        "requirement_ref": "2.2",
+        "priority": "P1",
+        "category": "error",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "人为触发温度传感器读数为 65℃"
+        ],
+        "expected": "2 秒内切断加热输出，OLED 显示过温保护状态"
+      },
+      {
+        "id": "TC-011",
+        "title": "本地交互：长按电源键 3s 进入设置菜单",
+        "requirement_ref": "2.3",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "长按电源键 3 秒"
+        ],
+        "expected": "OLED 显示设置菜单，包含 Wi-Fi 配网与温度校准选项"
+      },
+      {
+        "id": "TC-012",
+        "title": "本地交互：掉电恢复（10 秒内恢复设置）",
+        "requirement_ref": "3.2",
+        "priority": "P1",
+        "category": "normal",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "断开电源，等待 10 秒后上电"
+        ],
+        "expected": "设备在 10 秒内恢复上次设置并正常工作"
+      },
+      {
+        "id": "TC-013",
+        "title": "远程控制：网络中断时本地控制不受影响",
+        "requirement_ref": "2.4",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "设备已通过 Wi-Fi 连接家庭网络"
+        ],
+        "steps": [
+          "断开设备与家庭网络的连接"
+        ],
+        "expected": "本地控制功能正常，OLED 显示当前温度和目标温度"
+      },
+      {
+        "id": "TC-014",
+        "title": "远程控制：网络恢复后自动重连",
+        "requirement_ref": "2.4",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "设备已通过 Wi-Fi 连接家庭网络"
+        ],
+        "steps": [
+          "断开设备与家庭网络的连接，等待 5 秒后重新连接"
+        ],
+        "expected": "设备自动重连 Wi-Fi，恢复远程控制功能"
+      },
+      {
+        "id": "TC-015",
+        "title": "远程控制：离线期间设置变更缓存并补报",
+        "requirement_ref": "2.4",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "设备已通过 Wi-Fi 连接家庭网络"
+        ],
+        "steps": [
+          "断开设备与家庭网络的连接，修改目标温度，等待 10 秒后恢复网络"
+        ],
+        "expected": "设备在恢复网络后，将离线期间的设置变更补报到 App"
+      },
+      {
+        "id": "TC-016",
+        "title": "其他：待机功耗 <1W",
+        "requirement_ref": "2.5",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "设备处于待机状态"
+        ],
+        "steps": [
+          "使用万用表测量设备待机功耗"
+        ],
+        "expected": "待机功耗 <1W"
+      },
+      {
+        "id": "TC-017",
+        "title": "其他：EEPROM 擦写寿命 ≥10 万次",
+        "requirement_ref": "2.5",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "设备已上电并初始化完成"
+        ],
+        "steps": [
+          "模拟 10 万次 EEPROM 擦写操作"
+        ],
+        "expected": "EEPROM 擦写寿命 ≥10 万次"
+      },
+      {
+        "id": "TC-018",
+        "title": "其他：EMC 传导发射测试通过",
+        "requirement_ref": "2.5",
+        "priority": "P2",
+        "category": "normal",
+        "preconditions": [
+          "设备已通过 EMC 传导发射测试"
+        ],
+        "steps": [
+          "使用专业 EMC 测试设备进行传导发射测试"
+        ],
+        "expected": "EMC 传导发射测试通过"
+      }
+    ],
+    "coverage_gaps": [
+      "2.4 网络中断时，离线期间的设置变更缓存机制具体实现细节未明确",
+      "2.4 网络恢复后补报的时机和数据格式未明确",
+      "2.5 待机功耗测试的具体方法未明确（需要指定测试环境）",
+      "2.5 EEPROM 擦写寿命测试的具体方法未明确（需要指定测试周期）"
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "ok": true,
+  "errors": [],
+  "stats": {
+    "chunks": 1,
+    "prompt_tokens": 956,
+    "completion_tokens": 931,
+    "seconds": 15.701417684555054
+  },
+  "result": {
+    "functional_requirements": [
+      {
+        "id": "FR-001",
+        "summary": "16路单体电压采集，精度±5mV，采样周期100ms",
+        "source_section": "2.1 电芯监测"
+      },
+      {
+        "id": "FR-002",
+        "summary": "总电压、总电流采集，电流量程±200A，支持软件校准",
+        "source_section": "2.1 电芯监测"
+      },
+      {
+        "id": "FR-003",
+        "summary": "4路NTC温度采集，分别布置在电芯表面与MOS散热器上",
+        "source_section": "2.1 电芯监测"
+      },
+      {
+        "id": "FR-004",
+        "summary": "任意单体电压≥3.65V触发过充保护，断开充电MOS，恢复电压3.45V",
+        "source_section": "2.2 保护功能"
+      },
+      {
+        "id": "FR-005",
+        "summary": "任意单体电压≤2.5V触发过放保护，断开放电MOS，恢复电压2.9V",
+        "source_section": "2.2 保护功能"
+      },
+      {
+        "id": "FR-006",
+        "summary": "放电电流>180A持续1s或>250A瞬时（100ms）触发过流保护",
+        "source_section": "2.2 保护功能"
+      },
+      {
+        "id": "FR-007",
+        "summary": "充电温度0～45℃，放电温度-20～55℃，超出范围禁止相应方向充放电",
+        "source_section": "2.2 保护功能"
+      },
+      {
+        "id": "FR-008",
+        "summary": "保护动作后记录故障码并通过指示灯与通信报文上报",
+        "source_section": "2.2 保护功能"
+      },
+      {
+        "id": "FR-009",
+        "summary": "单体压差>50mV时启动被动均衡，压差<20mV时停止",
+        "source_section": "2.3 均衡"
+      },
+      {
+        "id": "FR-010",
+        "summary": "均衡仅在充电阶段进行，且电芯温度>5℃才允许启动",
+        "source_section": "2.3 均衡"
+      },
+      {
+        "id": "FR-011",
+        "summary": "SOC采用开路电压（OCV）+库仑计组合估算，误差目标≤5%",
+        "source_section": "2.4 状态估算"
+      },
+      {
+        "id": "FR-012",
+        "summary": "提供健康度（SOH）粗估，依据为累计充放电容量衰减",
+        "source_section": "2.4 状态估算"
+      },
+      {
+        "id": "FR-013",
+        "summary": "CAN 2.0B上报电压、电流、温度、SOC、故障码，周期1s",
+        "source_section": "2.5 通信与记录"
+      },
+      {
+        "id": "FR-014",
+        "summary": "UART调试口输出诊断信息，波特率115200",
+        "source_section": "2.5 通信与记录"
+      },
+      {
+        "id": "FR-015",
+        "summary": "最近100条故障记录存入EEPROM，断电不丢失，可通过调试口导出",
+        "source_section": "2.5 通信与记录"
+      }
+    ],
+    "non_functional_requirements": [
+      "单板待机功耗<2mA@12V",
+      "保护动作响应时间≤50ms（从检测到动作）",
+      "工作温度-20～55℃，存储温度-40～85℃",
+      "产品需通过GB/T 36972相关测试"
+    ]
+  }
+}
