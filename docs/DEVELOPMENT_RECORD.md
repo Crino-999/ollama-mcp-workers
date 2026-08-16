@@ -304,6 +304,7 @@ L1/L2 产出达到"机械初稿 + 主代理终审"的设计预期；两个 Worke
 | 偶发空数组 | 主条目为空 | 模型稳定性 | 整体重试一次 |
 | 16K 上下文变慢 | CPU/GPU 混合 | 超 6GB 显存 | 8K + 分块 |
 | 密钥明文入配置 | 安全风险 | 配置习惯 | 立即轮换 + 改用 env_key / 环境变量 |
+| MCP 工具注册但模型不可见 | 应用内 MCP 工具为空，stdio 直连正常 | Deferred 暴露 + 自定义 provider 无 tool_search | `supports_search_tool=false` + 显式 cwd + 完全重启（详见 §15） |
 
 ---
 
@@ -385,3 +386,71 @@ Codex（编排层）── DeepSeek 主脑
 判定标准：当本地方案的云端 token 费用显著低于全云端方案、且总耗时仍在可接受范围内，即判定收益成立。例如文档提取 / 测试用例 100% 走本地（L1），需求分解 80% 本地 + 少量云端审核（L2），复杂创作保留云端（L3）——整体云端 token 账单明显下降。
 
 那才是这 14~15 个小时真正产生的回报：同样的工作，更少的云端费用。
+
+---
+
+## 15. 疑难排查：Codex Desktop 应用内 MCP 工具不可用（2026-08-16 晚）
+
+### 15.1 现象
+
+- 在其他开发任务（不同工作目录）中，Codex Desktop 的 MCP 面板"资源列表"一直为空；
+- 云端主代理无法以「应用内 MCP 工具」身份调用 Vision / Document Worker（工具不在模型工具列表里）；
+- 但用独立 MCP stdio 客户端（`scripts/mcp_smoke.py`）执行 `initialize` → `tools/list` → `tools/call` 全部正常——**Worker 的 MCP 实现本身没有问题**。
+
+### 15.2 分层定位
+
+按"从 Worker 到主模型"逐层核对（L1~L6）：
+
+| 层 | 环节 | 结论 | 依据 |
+|----|------|------|------|
+| L1 | Worker 启动 | ✅ | 日志：`vision` / `doc-worker` 均 `Service initialized` |
+| L2 | initialize 握手 | ✅ | 协议版本 2025-06-18 |
+| L3 | tools/list | ✅ | 日志：`tool_count=10`（视觉 6 + 文档 4 全部返回） |
+| L4 | Codex 连接管理器接收 | ✅ | 同一连接管理器的 `tool_count=10` |
+| L5 | 注入当前线程工具面 | ❌ | 工具被注册为 Deferred（延迟）暴露，不进前置工具列表 |
+| L6 | 主模型可见 | ❌ | 自定义 provider 下 `tool_search` 未下发，延迟工具永远加载不出来 |
+
+日志中反复出现：
+
+```
+Failed to list resource templates for MCP server 'vision': Mcp error: -32601: Method not found
+```
+
+这是**正常现象**：两个 Worker 只实现了 tools（工具），没有实现 resources（资源）。MCP 中 `resources/list` 与 `tools/list` 是两套独立能力，"资源列表为空"不代表 MCP 不可用。
+
+### 15.3 根因
+
+1. Codex 的 MCP 工具暴露策略（源码 `core/src/mcp_tool_exposure.rs` + `spec_plan.rs`）：
+   - `search_tool_enabled = model.supports_search_tool && provider.namespace_tools`；
+   - 为真 → 工具 `ToolExposure::Deferred`（需通过 `tool_search` 按名加载）；为假 → `ToolExposure::Direct`（直接进入模型工具列表）。
+2. 本机 `models.json` 中 deepseek 两个模型的 `supports_search_tool` 为 `true`，provider 默认支持 namespace tools → MCP 工具走 Deferred 暴露。
+3. 但自定义 deepseek provider 下 `tool_search` 并未下发（对应 GitHub issue #31750：custom model_provider → 无 tool_search / 动态工具发现），于是出现"工具已注册、模型永远看不到"。
+4. 主模型退而用 `list_mcp_resource_templates` 检查可用性 → 返回空（Worker 本就没有资源）→ 误判"MCP 不可用"，放弃分配。
+
+外部佐证（均为 openai/codex 公开 issue）：
+
+- #34018 / #19425 / #20771 / #38162 / #30343：Windows Desktop / stdio MCP 工具已被 `tools/list` 发现，却不进入 Desktop 线程工具面；
+- #31750：自定义 model_provider 无 tool_search / 动态工具发现；
+- #14449：未显式设置 cwd 时，本地 stdio MCP 在 Desktop 中不暴露。本机默认工作目录 `~/code` 不存在，正命中该场景。
+
+### 15.4 解决方案
+
+1. **cwd 修复**：新建会话时把工作目录从 `~/code`（目录不存在）改为项目根目录；
+2. **强制 Direct 暴露（方案 A）**：将 `~/.codex/models.json` 中 `deepseek-v4-flash` / `deepseek-v4-pro` 的 `supports_search_tool` 改为 `false`。修改前已备份为 `~/.codex/models.json.bak-20260816`；网页搜索走独立机制，不受该开关影响；
+3. **完全退出 Codex**（非仅关窗口）→ 重新打开 → 新建会话（旧会话恢复后同样生效）。
+
+未采用的方案 B：在全局 AGENTS.md 增加"不要用 `list_mcp_resources` 判断 MCP 可用性"的指引——当前已可用，暂不做多余工作。
+
+### 15.5 验证结果
+
+- 新会话：应用内 MCP 工具可用；
+- 旧会话（本会话恢复后）：工具列表出现全部 10 个 `mcp__vision__*` / `mcp__doc_worker__*`；
+- `mcp__vision__get_status`、`mcp__doc_worker__get_status` 均返回 `ok: true`（Ollama 0.32.3 在线）；
+- `mcp__doc_worker__extract_requirements` 端到端成功：`tests/fixtures/prd_vision_tool.md` → 12 条功能需求 + 3 条非功能需求，耗时约 18.5s；
+- 任务结束后 `ollama ps` 为空：`unload_after_task` 生命周期优化在应用内 MCP 调用路径上同样生效。
+
+### 15.6 经验与后续注意
+
+- MCP 中 resources 与 tools 是两套能力：tool-only 服务器的资源列表为空是**正常现象**，判断可用性应看 `tools/list` 或直接调用 `get_status`；
+- 自定义 model_provider + Deferred 暴露是当前版本的已知坑：工具"已注册但模型看不见"。升级 Codex、切换官方后端或修改 `models.json` 后需复查该行为；
+- 修改 `~/.codex/models.json` 前先备份；本仓库为公开仓库，文档中涉及本机路径一律用 `~` 或相对表达，不写真实用户名。
