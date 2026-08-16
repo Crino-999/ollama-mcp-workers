@@ -305,6 +305,7 @@ L1/L2 产出达到"机械初稿 + 主代理终审"的设计预期；两个 Worke
 | 16K 上下文变慢 | CPU/GPU 混合 | 超 6GB 显存 | 8K + 分块 |
 | 密钥明文入配置 | 安全风险 | 配置习惯 | 立即轮换 + 改用 env_key / 环境变量 |
 | MCP 工具注册但模型不可见 | 应用内 MCP 工具为空，stdio 直连正常 | Deferred 暴露 + 自定义 provider 无 tool_search | `supports_search_tool=false` + 显式 cwd + 完全重启（详见 §15） |
+| 模板对、实际加载缺 | Trae 端大图识别仍按 4096 拒绝、doc-worker 不在工具列表 | 仓库模板演进后未回灌 `%APPDATA%\Trae CN\User\mcp.json` | 同步两边配置 + 重启（详见 §16） |
 
 ---
 
@@ -454,3 +455,69 @@ Failed to list resource templates for MCP server 'vision': Mcp error: -32601: Me
 - MCP 中 resources 与 tools 是两套能力：tool-only 服务器的资源列表为空是**正常现象**，判断可用性应看 `tools/list` 或直接调用 `get_status`；
 - 自定义 model_provider + Deferred 暴露是当前版本的已知坑：工具"已注册但模型看不见"。升级 Codex、切换官方后端或修改 `models.json` 后需复查该行为；
 - 修改 `~/.codex/models.json` 前先备份；本仓库为公开仓库，文档中涉及本机路径一律用 `~` 或相对表达，不写真实用户名。
+
+---
+
+## 16. Trae 端 MCP 配置对齐与三任务实测（2026-08-16 晚，紧接 §15）
+
+### 16.1 背景
+
+§15 解决了 Codex Desktop 应用内 MCP 工具不可用的问题。但排查过程中只对 Codex 端做了对齐，Trae 端的 MCP 配置自初始版本（§2）以来基本没动过：当时 Vision Worker 接入时只配了 `OLLAMA_HOST` 与 `VISION_MODEL` 两个 env，后续 §4（大图自动分区识别，引入 `OLLAMA_NUM_CTX=8192`）、§5（免路径截图）、§7（Document Worker 上线）都没有回灌到 Trae 端的实际加载配置里。Codex 端的 §15 验证完成后，回头补 Trae 这一笔账。
+
+### 16.2 现象（三处配置不一致）
+
+| 配置项 | Trae 实际加载（`%APPDATA%\Trae CN\User\mcp.json`） | 项目模板 `config/trae.json` | 项目根 `mcp.json` |
+|--------|---|---|---|
+| Vision 服务名 | `Vision` | `qwen2.5vl-vision` | `qwen2.5vl-vision` |
+| `OLLAMA_TIMEOUT` | ❌ 缺 | ✅ 120 | ✅ 120 |
+| `MAX_IMAGE_SIZE` | ❌ 缺 | ✅ 5242880 | ✅ 5242880 |
+| `MAX_IMAGE_DIM` | ❌ 缺 | ✅ 1024 | ✅ 1024 |
+| `OLLAMA_NUM_CTX` | ❌ 缺（大图识别会被默认 4096 拒绝） | ✅ 8192 | ❌ 缺 |
+| doc-worker | ❌ 完全没配 | ✅ 有 | ✅ 有 |
+
+两个根因：
+1. 配置模板演进后没回灌到 Trae 端实际加载位置；
+2. Trae 实际加载的 MCP 配置不在仓库内，而在 `%APPDATA%\Trae CN\User\mcp.json`，这一点之前没显式记录，导致仓库模板与 Trae 实际加载长期分叉。
+
+### 16.3 调整
+
+1. **项目根 `mcp.json`**：Vision 段补 `OLLAMA_NUM_CTX: "8192"`，与 `config/trae.json` 模板对齐。
+2. **Trae 实际加载配置（`%APPDATA%\Trae CN\User\mcp.json`）**：
+   - Vision 段补 4 个缺失 env（`OLLAMA_TIMEOUT` / `MAX_IMAGE_SIZE` / `MAX_IMAGE_DIM` / `OLLAMA_NUM_CTX`）；
+   - 新增 `doc-worker` 段（`doc_worker.py` + `qwen3:4b` + `OLLAMA_TIMEOUT=300` + `OLLAMA_NUM_CTX=8192`）。
+3. **服务名决策**：保留 Trae 端原服务名 `Vision`（工具前缀 `mcp_Vision__*`），不强行对齐为模板里的 `qwen2.5vl-vision`。理由：服务名只是标识、对功能无影响；改名会让 `.trae-cn\mcps\mcp_Vision\` 已缓存的工具 descriptor 失效，需要清缓存重建，收益不抵成本。模板与实际加载的服务名差异，作为已知项接受。
+
+### 16.4 验证（基础状态 + 端到端三任务 + 显存生命周期）
+
+完全退出 Trae 重开后，新会话同时加载 `mcp_Vision` 与 `mcp_doc-worker`。
+
+**基础状态**：
+- `mcp_Vision__get_status`：`ok: true`，qwen2.5vl:7b 在线，`max_image_size=5242880`、`max_image_dim=1024`、`timeout=120`、`num_ctx=8192` 四项新 env 全部生效；
+- `mcp_doc-worker__get_status`：`ok: true`，qwen3:4b 在线，Ollama 0.32.3。
+
+**端到端三任务实测**（输入 `tests/fixtures/prd_vision_tool.md`，与 §8 基准产物 `tests/bench_outputs/prd_vision_tool_*.json` 对照）：
+
+| 任务 | 基准（§8） | Trae 路径实测 | 一致性 | 备注 |
+|------|---|---|:---:|------|
+| A 提取 | 12 FR + 3 NFR / 12.17s | 12 FR + 3 NFR | ✅ | 数量与语义完全一致 |
+| B 分解 | 18 REQ + 2 issues / 33.08s | 15 REQ + 2 issues | ⚠️ | REQ 少 3（基准把"数据本地化/性能 <10s/错误信息"3 条非功能需求也分解为 REQ，本次未拆）；`open_issues` 两条完全一致 |
+| C 测试用例 | 11 TC + 5 gaps / 28.21s | 10 TC + 2 gaps | ⚠️ | TC 少 1；实测把边界值分析做得更细（TC-002~008 全是 1024/1025 边界对照）；`coverage_gaps` 前 2 条与基准完全一致 |
+
+所有差异都在 §8.2 评价的"良好"区间内波动（qwen3:4b 在 B/C 任务上的已知稳定性边界），**与 Trae 配置无关**。判定 Trae 端配置正确。
+
+**显存生命周期**（按 `AGENTS.md` 调度约定）：
+
+| 调用 | `unload_after_task` | 调用后 `GET /api/ps` |
+|------|---|---|
+| A 提取 | true（默认） | `models: []` ✅ |
+| B 分解 | false（保持驻留，C 紧随其后） | C 立即执行，无重新加载等待 ✅ |
+| C 测试用例 | true（连续任务结束） | `models: []` ✅ |
+
+`unload_after_task` 参数化在 Trae 应用内 MCP 调用路径上同样生效，与 §15.5 在 Codex 路径上的验证结论一致。
+
+### 16.5 经验与后续注意
+
+- **配置模板与实际加载位置会分叉**：仓库里的 `config/trae.json` 是模板，Trae 实际加载位置在 `%APPDATA%\Trae CN\User\mcp.json`（用户级，不在仓库内）。后续每次模板演进（新增 env、新增 Worker）必须同步两边，否则会重复本次这种"模板对、实际加载缺"的隐性故障。
+- **服务名是标识不是协议**：Trae 实际加载的服务名可以与模板不同（`Vision` vs `qwen2.5vl-vision`），工具前缀随服务名变化（`mcp_<name>__*`）。改名收益不抵缓存重建成本，保留即可。
+- **Trae 不受 §15 Deferred 暴露策略影响**：Codex 端的"工具已注册但模型看不见"坑是自定义 provider + `tool_search` 缺失导致的，Trae 端走标准 MCP，配置补齐即可调用，不需要改 `supports_search_tool` 之类的开关。
+- **三任务实测作为 Trae 路径接入证据**：复用 `tests/fixtures` 与 `tests/bench_outputs` 既是 §8 基准的 Ground Truth，也是任何新客户端接入的回归基线——后续接入新客户端（Claude Code / VSCode Copilot / Cursor）时，跑同一份 vision_tool A/B/C 三任务与基准对照，即可判定接入是否正确，无需重新设计测试数据。
